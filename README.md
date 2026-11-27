@@ -26,9 +26,36 @@
 
 PPT 模板保留原有 PPMT 示例内容。出稿时按本次项目资料替换封面、客户背景、现场图和工艺数据，逐页复核固定标题、场景图位、时间轴和标准 BOM。
 
+## 仓库结构
+
+| 位置 | 内容 | 维护约定 |
+|---|---|---|
+| `skill/` | 唯一的 `SKILL.md`、三份共用规则、通用脚本（`check_ppmt_layout.py`、`dump_template.py`、`make_supplement_xlsx.py`） | 业务规则只改这里 |
+| `platforms/doubao/` | 豆包执行说明、依赖本机环境的 `render_pages.py` | 只放执行差异，不复制共用内容 |
+| `templates/` | PPT 与 Excel 模板各一份 | 升版时只替换这里，不在别处留副本 |
+| `build_skill.py` | 从同一次提交生成两个平台 ZIP | 打包与体积门禁 |
+
+`SKILL.md` 的「平台执行」段引用 `references/平台执行说明.md`；该文件由打包时从 `platforms/<平台>/` 注入，仓库里不重复存放。ChatGPT 侧执行说明待补，缺该文件时技能按共用规则和宿主现有能力执行。
+
+## 构建与发布
+
+```bash
+python3 build_skill.py --version 1.0.2                      # dist/ 下生成两个 ZIP
+python3 build_skill.py --version 1.0.2 --platform doubao    # 只出豆包版
+python3 build_skill.py --platform doubao --no-assets        # 开放平台上传版，不含模板
+```
+
+- 两个 ZIP 根目录都是 `industrial-robot-solution/`，`SKILL.md` 位于包根，技能名保持 `industrial-robot-solution`。
+- 模板从 `templates/` 复制到包内 `assets/`，带模板的包约 10 MB。
+- 包内 `VERSION` 记录版本号、提交号与平台；ZIP 使用固定时间戳，同一提交可复现。
+- 豆包开放平台上传限整包 16 MB、单文件 2 MB。PPT 模板单文件约 9.9 MB，超限，上传平台时用 `--no-assets`，模板另行分发；工作台本地安装用带模板的包。
+- 同一次提交的两个 ZIP 作为同一个 Release 的两个附件发布，标签用小写 `v主.次.修订`。
+
 ## 版本维护
 
-1. 从默认分支开分支，通过 Pull Request 审核。模板文件使用「业务对象_文件用途_V主.次.修订.扩展名」。只为发生变化的文件升版。保持 `SKILL.md` 入口名称，模板改名时同步更新引用。
-2. 检查空白 Excel 和 PPT 模板可打开。用脱敏输入复跑，核对封面与客户背景、人工与机器人动作对应、场景图、时间轴和标准 BOM。
-3. 从 `skill/` 目录的内容生成 ZIP，确保 `SKILL.md` 位于压缩包根目录。确认配套文件版本后，合并变更、创建小写 `v主.次.修订` 标签并发布。发布说明列出附件版本、变更及验证状态。
-4. 历史客户方案、视频、报价和项目专用归档保存在有权访问的内部项目目录。
+1. 从 `main` 开临时分支（如 `doubao-adapt`），通过 Pull Request 审核后合入；不为平台长期维护分支，避免每次同步都重写提交历史。
+2. 共用规则与业务判断只改 `skill/`；平台差异只改 `platforms/<平台>/`；模板只在 `templates/` 升版，保持「业务对象_文件用途_V主.次.修订.扩展名」，改名时同步更新引用。
+3. 检查空白 Excel 与 PPT 模板可打开；用脱敏调研表和原模板复跑，核对封面、客户背景、人工与机器人动作对应、场景图、时间轴和标准 BOM。
+4. 跑 `python3 build_skill.py`，确认两个 ZIP 可解压、`SKILL.md` 在包根、`assets/` 内模板完整；豆包包至少实测「ZIP 能导入并调用」和「同一份脱敏 Excel 与原模板能导出可编辑 PPTX」。
+5. 合并后打标签、发 Release，说明附件版本、变更与验证状态。
+6. 历史客户方案、视频、报价和项目专用归档保存在有权访问的内部项目目录。
