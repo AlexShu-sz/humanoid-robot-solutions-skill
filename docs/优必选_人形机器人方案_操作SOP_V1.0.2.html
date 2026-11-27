@@ -1,0 +1,370 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>优必选人形机器人方案自动化流程 V1.0.2</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --back: #081321;
+      --surface: #111f30;
+      --surface-2: #0c192a;
+      --border: #334d65;
+      --ink: #f1f6fc;
+      --muted: #b9cadb;
+      --blue: #a2d1fa;
+      --mint: #a7dfd2;
+      --amber: #f0cf9a;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: radial-gradient(ellipse at 90% 0%, #153352 0%, transparent 50%), var(--back);
+      color: var(--ink);
+      font: 16px/1.6 "Microsoft YaHei","Noto Sans CJK SC",system-ui,sans-serif;
+      overflow-wrap: anywhere;
+    }
+    main { max-width: 1060px; margin: auto; padding: 36px 28px 44px; }
+    h1,h2,h3,h4,p,ol,ul,dl,dd,table { margin: 0; }
+    h1 { margin: 4px 0 9px; font-size: clamp(27px,5vw,42px); line-height: 1.24; }
+    h2 { font-size: 22px; }
+    h3 { font-size: 18px; line-height: 1.35; }
+    h4 { font-size: 15px; color: var(--blue); }
+    section { margin-top: 30px; }
+    .brand { font-size: 14px; color: var(--blue); font-weight: bold; }
+    .lead { color: var(--muted); max-width: 50rem; }
+    .lead strong { color: var(--ink); }
+
+    /* 输入输出概览 */
+    .io-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 14px; }
+    .card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+      padding: 14px 16px; min-width: 0;
+    }
+    .card.in { border-left: 3px solid #77b9f3; }
+    .card.out { border-left: 3px solid #6fbfae; }
+    .card h3 { display: flex; align-items: baseline; gap: 8px; margin-bottom: 8px; }
+    .card h3 small { font-size: 13px; color: var(--muted); font-weight: normal; }
+    .req, .opt {
+      display: inline-block; font: bold 12px/1.5 "Microsoft YaHei",sans-serif;
+      padding: 1px 7px; border-radius: 4px; margin-left: auto;
+    }
+    .req { background: #2b4661; color: #cfe6fb; }
+    .opt { background: #22384a; color: #a9c6b9; }
+    .list { margin-top: 4px; padding-left: 1.15em; }
+    .list li { color: var(--muted); font-size: 14px; margin-bottom: 4px; }
+    .list li b { color: var(--ink); font-weight: bold; }
+    .list li code { font-size: 13px; color: var(--blue); }
+    .out-of-scope {
+      margin-top: 10px; padding: 10px 13px; border: 1px dashed #3c586f; border-radius: 7px;
+      background: var(--surface-2); color: var(--muted); font-size: 13px;
+    }
+    .out-of-scope strong { color: var(--amber); }
+
+    /* 安装 */
+    .install { display: grid; gap: 11px; margin-top: 14px; }
+    .path {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px;
+    }
+    .path-head { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 9px; }
+    .tag {
+      font: bold 12px/1.6 "Microsoft YaHei",sans-serif; padding: 2px 9px; border-radius: 4px;
+      background: #203955; color: #d6eaff;
+    }
+    .tag.gray { background: #22384a; color: #a9c6b9; }
+    .path ol { padding-left: 1.35em; }
+    .path ol li { font-size: 14px; color: var(--muted); margin-bottom: 5px; }
+    .path ol li b { color: var(--ink); }
+    .path code, .snippet { font-family: ui-monospace,Menlo,Consolas,monospace; }
+    .snippet {
+      display: block; margin-top: 9px; padding: 9px 11px; font-size: 13px; color: #d7e7f4;
+      background: #0a1524; border: 1px solid #2c455c; border-radius: 6px; white-space: pre-wrap;
+      user-select: text;
+    }
+    .warn { margin-top: 9px; font-size: 13px; color: var(--amber); }
+
+    /* 四步流程 */
+    .steps { display: grid; gap: 11px; list-style: none; padding: 0; margin-top: 14px; }
+    .step {
+      min-width: 0; padding: 13px 16px 15px; background: var(--surface);
+      border: 1px solid var(--border); border-left: 3px solid #77b9f3; border-radius: 8px;
+    }
+    .step h3 { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+    .number {
+      flex: 0 0 27px; background: #203955; color: #d6eaff; border-radius: 6px;
+      text-align: center; font: bold 14px/27px Arial,sans-serif;
+    }
+    .io { display: grid; grid-template-columns: 1fr 1.55fr 1fr; gap: 16px; }
+    .io > div { min-width: 0; }
+    dt { color: var(--blue); font-size: 13px; font-weight: bold; margin-bottom: 2px; }
+    dd { font-size: 14px; color: var(--muted); }
+    .io > div + div { border-left: 1px solid var(--border); padding-left: 16px; }
+    .io > div:last-child dt { color: var(--mint); }
+    .io > div:last-child dd { color: var(--ink); }
+    .prompt {
+      margin-top: 12px; padding: 11px 12px; border: 1px solid #426283; border-radius: 7px;
+      background: var(--surface-2); display: grid; grid-template-columns: 1fr auto; gap: 6px 12px; align-items: center;
+    }
+    .prompt h4 { grid-column: 1; grid-row: 1; align-self: center; }
+    .prompt p { grid-column: 1 / -1; font-size: 14px; user-select: text; }
+    .copy {
+      grid-column: 2; grid-row: 1; justify-self: end; align-self: center;
+      font: inherit; font-size: 13px; color: var(--ink); background: #214366; border: 1px solid #6589ab;
+      border-radius: 5px; padding: 4px 10px; cursor: pointer; min-height: 32px;
+    }
+    .copy:hover { background: #2c5078; }
+    .copy:focus-visible { outline: 2px solid var(--blue); outline-offset: 3px; }
+    .copy[hidden] { display: none; }
+    .status { grid-column: 1 / -1; color: var(--mint); font-size: 13px; }
+    .status:empty { display: none; }
+
+    /* 平台差异 */
+    table { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 14px; }
+    caption { caption-side: bottom; font-size: 13px; color: var(--muted); text-align: left; padding-top: 7px; }
+    th, td { border: 1px solid var(--border); padding: 8px 10px; text-align: left; vertical-align: top; }
+    th { background: #17293c; color: var(--blue); font-weight: bold; white-space: nowrap; }
+    td { color: var(--muted); }
+    td b { color: var(--ink); font-weight: bold; }
+    .wrap { overflow-x: auto; }
+
+    /* 校验 */
+    .checks { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 12px; }
+    .check {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 7px; padding: 11px 13px;
+    }
+    .check h4 { margin-bottom: 4px; }
+    .check p { font-size: 13px; color: var(--muted); }
+
+    .note { margin-top: 12px; color: var(--muted); font-size: 14px; }
+    footer { margin-top: 34px; padding-top: 14px; border-top: 1px solid var(--border); color: var(--muted); font-size: 13px; }
+    footer b { color: var(--ink); }
+
+    @media (max-width: 780px) {
+      .io-cards, .checks { grid-template-columns: 1fr; }
+      .io { grid-template-columns: 1fr; gap: 8px; }
+      .io > div + div { border-left: 0; padding-left: 0; }
+    }
+    @media (max-width: 660px) {
+      main { padding: 24px 15px; }
+      .step, .card, .path { padding: 12px 13px; }
+    }
+    @media print {
+      @page { margin: 14mm; }
+      :root {
+        color-scheme: light; --ink: #142c42; --muted: #294157; --blue: #214f7b;
+        --mint: #1b5f53; --amber: #7a5a12; --border: #899bac;
+      }
+      body,.step,.card,.path,.prompt,.number,.snippet,.check,.out-of-scope { background: #fff; }
+      main { padding: 0; }
+      h1 { font-size: 25px; }
+      .number { color: #214f7b; border: 1px solid var(--border); }
+      .step, .card, .path, table { break-inside: avoid; }
+      .copy,.status { display: none; }
+    }
+  </style>
+</head>
+<body>
+<main>
+  <header>
+    <p class="brand">优必选 · 工业人形机器人</p>
+    <h1>人形机器人方案自动化流程</h1>
+    <p class="lead"><strong>装一次技能，之后每次只需上传现场调研 Excel。</strong>模板可以不传，技能自带品牌模板；有现场视频、照片或图纸就一并上传，AI 会拿来核对动作、设备和空间。出稿同时会给一份客户补充信息表，缺什么、为什么影响方案，都写在表里。</p>
+  </header>
+
+  <section aria-labelledby="io-title">
+    <h2 id="io-title">这次要什么、给什么</h2>
+    <div class="io-cards">
+      <article class="card in">
+        <h3>你要提供 <small>输入</small></h3>
+        <ul class="list">
+          <li><span class="req">必需</span> <b>现场调研 Excel</b>：《项目现场调研_Excel模板_V1.0.0.xlsx》或同字段的逐项版，写清项目信息、工位编号、物料、人工动作、节拍与改造目标。</li>
+          <li><span class="opt">可选</span> <b>PPT 模板</b>：本次上传即优先用这份；不传则用技能自带 <code>assets/人形机器人方案_PPT模板_V1.0.0.pptx</code>。</li>
+          <li><span class="opt">可选</span> <b>现场视频 / 照片 / 图纸</b>：用于核对动作顺序、设备接口、空间尺寸；视频会按时间点抽帧比对。</li>
+          <li><span class="opt">可选</span> <b>历史方案、参考资料</b>：本体、末端、历史解决方案、报价四类，用于选型与报价参考。</li>
+          <li><span class="opt">可选</span> <b>上一版评审稿 + 已回填补充表</b>：第二轮更新时一起给，按问题编号回填。</li>
+        </ul>
+      </article>
+
+      <article class="card out">
+        <h3>你会拿到 <small>输出</small></h3>
+        <ul class="list">
+          <li><b>评审稿 PPTX</b>（默认交付）：可编辑文本、表格、图形，中文命名 <code>客户名_项目名_人形机器人方案评审稿.pptx</code>。</li>
+          <li><b>客户补充信息表 XLSX</b>：影响方案判断的问题逐条列出，客户填写列留空待回填，默认 <code>客户名_项目名_工位编号_客户补充信息表.xlsx</code>。</li>
+          <li><b>页面内的待确认标注</b>：每条待确认写在对应正文、图示或表格行，不放页底小字，也不只写在备注里。</li>
+          <li><b>交付说明</b>：用了哪份模板、共几页、多少项待确认、做过哪些校验。</li>
+        </ul>
+        <p class="out-of-scope"><strong>不交付</strong>：内部项目稿（<code>内部项目稿.md</code>）、逐页渲染图、模板副本。这些留在工作目录供复核，不占交付清单。</p>
+      </article>
+    </div>
+  </section>
+
+  <section aria-labelledby="install-title">
+    <h2 id="install-title">安装技能</h2>
+    <p class="note">技能包从 <b>最新发布</b> 下载，同一个 Release 里有两个附件：<code>…_doubao.zip</code> 与 <code>…_chatgpt.zip</code>，技能名统一是 <code>industrial-robot-solution</code>。</p>
+
+    <div class="install">
+      <article class="path">
+        <div class="path-head">
+          <span class="tag">豆包工作 · 本机安装</span>
+          <h4>带模板的包，适合自己和固定同事用</h4>
+        </div>
+        <ol>
+          <li>下载 <b>doubao 包</b>（约 9.9 MB，含两份模板）。</li>
+          <li>把 ZIP 发到对话里，附一句「安装这个技能」；技能会解压到工作区的 <code>.user_skills/industrial-robot-solution</code>。</li>
+          <li>装完直接在同一个对话里发下面的出稿指令，不必再上传模板。</li>
+          <li>更新版本时重复上面两步，覆盖同名目录即可，模板与规则一起换新。</li>
+        </ol>
+        <p class="warn">带模板的包只适合本机安装：模板单文件约 9.8 MB，超过开放平台单文件 2 MB 上限，不能上传到控制台。</p>
+      </article>
+
+      <article class="path">
+        <div class="path-head">
+          <span class="tag">豆包开放平台 · 企业内上架</span>
+          <h4>发一次包，同事在「企业提供」里自己装</h4>
+        </div>
+        <ol>
+          <li>先出不含模板的包：<b>整包约 0.1 MB，符合 16 MB / 2 MB 限制</b>。</li>
+          <li>控制台左侧 <b>技能列表</b> → <b>+ 创建技能</b> → 选 <b>企业专属</b>。发布范围首次确定后不能切换，公开上架要先过企业资质认证。</li>
+          <li><b>上传资源</b>：拖入 ZIP。限制是压缩包 ≤ 16 MB、条目 ≤ 1024 个、单文件解压 ≤ 2 MB、解压总量 ≤ 16 MB。</li>
+          <li>等平台解析出名称、简介、图标、版本号并校验通过。这几项来自包内，控制台改不了，要改只能重打包再传。</li>
+          <li><b>完善技能信息</b>：选企业分类，版本号用三段式（<b>1.0.2</b>），可用范围选企业内全员或指定成员。</li>
+          <li><b>提交版本</b> → 企业管理员审核 → 通过后出现在豆包工作 <b>「企业提供」</b> 列表，点安装、启用即可。</li>
+          <li><b>模板另发</b>：包内没有 <code>assets/</code>，把模板在对话里上传一次，或放到团队共享目录。</li>
+        </ol>
+        <span class="snippet">python3 build_skill.py --platform doubao --no-assets   # 出控制台上传包，不含模板
+python3 build_skill.py --version 1.0.2                  # 出两个完整包，用于本机安装与 Release</span>
+      </article>
+
+      <article class="path">
+        <div class="path-head">
+          <span class="tag gray">ChatGPT</span>
+          <h4>用同一个 Release 的 chatgpt 包</h4>
+        </div>
+        <ol>
+          <li>下载 <b>chatgpt 包</b>，按该平台加载技能的方式装好。</li>
+          <li>该平台的执行说明还没写，包内没有 <code>references/平台执行说明.md</code> 时，技能按共用规则和宿主现有能力执行，交付前会说明缺这一步。</li>
+          <li>豆包侧的差异（交付方式、在线幻灯片边界）不影响共用规则，两边跑同一套业务判断。</li>
+        </ol>
+      </article>
+    </div>
+  </section>
+
+  <section aria-labelledby="workflow-title">
+    <h2 id="workflow-title">四步流程</h2>
+    <ol class="steps">
+      <li class="step">
+        <h3><span class="number">1</span>填好现场调研 Excel</h3>
+        <dl class="io">
+          <div><dt>输入</dt><dd>空白《项目现场调研_Excel模板_V1.0.0.xlsx》、已有项目资料。</dd></div>
+          <div><dt>怎么做</dt><dd>填客户、项目、工位编号、物料、人工动作、节拍和改造目标。数字写明单位，缺失项填「待确认」，不要留空。</dd></div>
+          <div><dt>输出</dt><dd>填好的现场调研 Excel。</dd></div>
+        </dl>
+      </li>
+
+      <li class="step">
+        <h3><span class="number">2</span>上传资料，发一句出稿指令</h3>
+        <dl class="io">
+          <div><dt>输入</dt><dd>填好的 Excel；模板、现场视频、照片、图纸、历史方案按需附上。</dd></div>
+          <div><dt>怎么做</dt><dd>资料放进同一对话，发下面任一条指令。有模板就用第一条，没有就用第二条走自带模板。</dd></div>
+          <div><dt>输出</dt><dd>中文命名的可编辑评审稿 PPTX；影响方案判断的缺项整理成客户补充信息表 XLSX。</dd></div>
+        </dl>
+        <div class="prompt">
+          <h4>指令 A · 上传了模板</h4>
+          <p>请使用人形机器人解决方案技能，根据我上传的现场调研 Excel，按我上传的 PPT 模板生成可编辑的人形机器人方案评审稿。现场视频、照片或图纸请一并核对，与表格冲突的地方在对应页面注明。待确认信息写在相关正文或表格行，影响方案判断的问题另外整理成客户补充信息表。交付文件默认用中文命名。</p>
+          <button class="copy" type="button" hidden>复制指令</button>
+          <p class="status" role="status"></p>
+        </div>
+        <div class="prompt">
+          <h4>指令 B · 不上传模板，用技能自带品牌模板</h4>
+          <p>请使用人形机器人解决方案技能，根据我上传的现场调研 Excel 生成可编辑的人形机器人方案评审稿，版式用技能自带的品牌模板。现场视频、照片或图纸请一并核对，与表格冲突的地方在对应页面注明。待确认信息写在相关正文或表格行，影响方案判断的问题另外整理成客户补充信息表。交付文件默认用中文命名。</p>
+          <button class="copy" type="button" hidden>复制指令</button>
+          <p class="status" role="status"></p>
+        </div>
+      </li>
+
+      <li class="step">
+        <h3><span class="number">3</span>下载并检查初稿</h3>
+        <dl class="io">
+          <div><dt>输入</dt><dd>评审稿 PPTX、客户补充信息表 XLSX、交付说明。</dd></div>
+          <div><dt>怎么做</dt><dd>按下面六项核对。有问题的写进补充表或直接列为修改意见，不用自己改 PPT。</dd></div>
+          <div><dt>输出</dt><dd>核对过的评审稿，或一份待补充、待修改清单。</dd></div>
+        </dl>
+      </li>
+
+      <li class="step">
+        <h3><span class="number">4</span>回填补充表，让 AI 更新</h3>
+        <dl class="io">
+          <div><dt>输入</dt><dd>客户回填后的补充表、新资料或修改意见。</dd></div>
+          <div><dt>怎么做</dt><dd>在原对话上传回填表，让 AI 按问题编号更新对应页面。换对话时，把上一版 PPT、内部项目稿和补充表一起给。</dd></div>
+          <div><dt>输出</dt><dd>修订后的 PPTX、更新后的补充表，以及「哪些页面因补充信息变了」的说明。</dd></div>
+        </dl>
+      </li>
+    </ol>
+  </section>
+
+  <section aria-labelledby="check-title">
+    <h2 id="check-title">检查初稿看这六项</h2>
+    <div class="checks">
+      <article class="check"><h4>封面与命名</h4><p>客户名、项目行逐字对，工位编号留在正文和补充表；文件名与交付说明一致。</p></article>
+      <article class="check"><h4>动作对应</h4><p>人工动作页与机器人等效页的 01–06 编号、名称、顺序一一对应；三色角色标签（人工保留／机器人执行／系统或设备）贴对位置。</p></article>
+      <article class="check"><h4>时间轴与场景图</h4><p>没有项目排期时沿用模板五段周次并标「计划参考」；工业应用场景图未被替换或移位。</p></article>
+      <article class="check"><h4>配置与报价</h4><p>表头、分组、标准项目名称与顺序不变，编号跨页连续；软件组只留「软件和场景开发」。</p></article>
+      <article class="check"><h4>待确认与可读性</h4><p>每条待确认在正文可见；没有页底小字注释；没有文字超出框、图片裁切、数字与单位拆行。</p></article>
+      <article class="check"><h4>机型与子系统</h4><p>本体型号副标题、末端示意、工位布局与现场实际相符；与视频不一致处已标为拟改造或待确认。</p></article>
+    </div>
+    <p class="note">前四项有固定页位校验脚本兜底，后两项靠逐页渲染看图。这两步由技能在出稿时完成，你只需要核对结论。</p>
+  </section>
+
+  <section aria-labelledby="platform-title">
+    <h2 id="platform-title">两个平台的差异</h2>
+    <div class="wrap">
+      <table>
+        <thead>
+          <tr><th scope="col">环节</th><th scope="col">豆包工作</th><th scope="col">ChatGPT</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>模板</td><td>可上传指定模板；不传用包内 <b>assets/</b> 自带模板</td><td>同左，包内同样带 <b>assets/</b></td></tr>
+          <tr><td>脚本</td><td><b>dump_template / check_ppmt_layout / make_supplement_xlsx / render_pages</b> 均在本机执行</td><td>前三个共用，<b>render_pages</b> 依赖本机 LibreOffice，视宿主能力</td></tr>
+          <tr><td>交付</td><td>按绝对路径交付本地 <b>.pptx</b> 与 <b>.xlsx</b></td><td>同左，按平台文件交付方式</td></tr>
+          <tr><td>在线幻灯片</td><td>要飞书在线版时只出<b>逐页制作稿</b>，排版另走幻灯片技能；在线版不复用本稿版式锁定结论</td><td>不涉及</td></tr>
+          <tr><td>字体</td><td>文件内写微软雅黑／Arial；本机预览由 Noto Sans CJK 替代，预览断行差异不据此改稿</td><td>按宿主字体环境</td></tr>
+        </tbody>
+        <caption>业务判断两边一致，差异只落在模板取用、脚本执行和交付方式。</caption>
+      </table>
+    </div>
+  </section>
+
+  <section aria-labelledby="rule-title">
+    <h2 id="rule-title">三条边界</h2>
+    <p class="note"><b>不编数据。</b>型号、价格、节拍、案例都来自本次资料或可访问的参考资料；缺就记缺项，不用估算值冒充实测。<b>区分状态。</b>「已确认／现场观察／工程假设／待确认／冲突」分开写，文件日期新或视频里看得见都不等于客户确认。<b>只交能改的稿。</b>交付物必须是可编辑 PPTX，不是图片拼版或只读预览。</p>
+  </section>
+
+  <footer>
+    <p>版本 <b>v1.0.2</b>｜技能 <b>industrial-robot-solution</b>｜源文件见仓库 <b>skill/SKILL.md</b>，豆包差异见 <b>platforms/doubao/平台执行说明.md</b>。发布包从最新 Release 下载。</p>
+  </footer>
+</main>
+<script>
+  document.querySelectorAll('.prompt').forEach((box) => {
+    const button = box.querySelector('.copy');
+    const text = box.querySelector('p');
+    const status = box.querySelector('.status');
+    if (!navigator.clipboard?.writeText) return;
+    button.hidden = false;
+    button.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(text.textContent.trim());
+        status.textContent = '指令已复制。';
+      } catch {
+        const selection = window.getSelection();
+        const range = document.createRange();
+        range.selectNodeContents(text);
+        selection.removeAllRanges();
+        selection.addRange(range);
+        status.textContent = '已选中指令，请使用复制快捷键。';
+      }
+    });
+  });
+</script>
+</body>
+</html>
