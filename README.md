@@ -19,9 +19,9 @@
 
 | 用途 | 文件或位置 |
 |---|---|
-| 操作 SOP | [操作 SOP V1.0.2（含安装流程）](docs/优必选\_人形机器人方案\_操作SOP_V1.0.2.html) |
-| PPT 模板 | [人形机器人方案\_PPT模板\_V1.0.0.pptx](templates/人形机器人方案\_PPT模板\_V1.0.0.pptx) |
-| 空白 Excel | [项目现场调研\_Excel模板\_V1.0.0.xlsx](templates/项目现场调研\_Excel模板\_V1.0.0.xlsx) |
+| 操作 SOP | [操作 SOP V1.0.2（含安装流程）](docs/优必选_人形机器人方案_操作SOP_V1.0.2.html) |
+| PPT 模板 | [人形机器人方案_PPT模板_V1.0.0.pptx](templates/人形机器人方案_PPT模板_V1.0.0.pptx) |
+| 空白 Excel | [项目现场调研_Excel模板_V1.0.0.xlsx](templates/项目现场调研_Excel模板_V1.0.0.xlsx) |
 | 技能 | [技能源文件](skill/SKILL.md)，[发布包从最新发布下载](../../releases/latest) |
 
 PPT 模板保留原有 PPMT 示例内容。出稿时按本次项目资料替换封面、客户背景、现场图和工艺数据，逐页复核固定标题、场景图位、时间轴和标准 BOM。
